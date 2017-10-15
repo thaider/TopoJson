@@ -1,0 +1,115 @@
+@purple-4-1: #f2f0f7;
+@purple-4-2: #cbc9e2;
+@purple-4-3: #9e9ac8;
+@purple-4-4: #6a51a3;
+
+div.map {
+    margin: 0 auto;
+    max-width: 960px;
+}
+g.map-at-states path {
+    fill: #fff;
+    opacity: 0.25;
+    stroke: #000;
+    stroke-width: 1.5px;
+}
+g.map-at-bv path {
+    cursor: default;
+    fill: @purple-4-4;
+    stroke: #fff;
+    stroke-width: .5px;
+}
+g.map-at-bv path.linienverkehr {
+	fill: @purple-4-3;
+}
+g.map-at-bv path.bv_eing {
+    cursor: default;
+    fill: @purple-4-2;
+    stroke: #fff;
+    stroke-width: .5px;
+}
+g.map-at-bv path.linie {
+    cursor: default;
+    fill: #aaaaaa;
+    fill: #0091a6;
+    stroke: #fff;
+    stroke-width: 1px;
+}
+g.map-at-bv path.highlight, g.map-at-bv,
+g.map-at-bv-eing path.highlight, g.map-at-bv-eing,
+g.map-at-bv path.filtered {
+    cursor: pointer;
+    fill: orange;
+}
+div.graphics {
+    position: relative;
+    z-index: 5;
+}
+div.bv_tooltip {
+    background: none repeat scroll 0 0 #fff;
+    border: 1px solid #f2f2f2;
+    border-radius: 3px;
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.4);
+    display: block;
+    font-size: 0.9em;
+    left: 0;
+    min-height: 40px;
+    padding: 10px;
+    position: absolute;
+    text-align: center;
+    top: 0;
+    width: 190px;
+    word-wrap: break-word;
+    z-index: 9;
+}
+div.bv_tooltip.no_display {
+		display:none;
+}
+div.bv_tooltip.no_display.clicked {
+		display:block;
+}
+div.bv_tooltip h3, div.tooltip p {
+    margin: 0;
+    padding: 0;
+}
+div.bv_tooltip h4 {
+    font-size: 1em;
+}
+div.bv_tooltip h5 {
+    font-size: 0.9em;
+    font-weight: normal;
+    margin: 2px 0 5px;
+}
+span.bv_tooltip_hr {
+    background: none repeat scroll 0 0 #ddd;
+    display: block;
+    height: 1px;
+    margin: 1px auto 3px;
+    width: 130px;
+}
+div.bv_tooltip .title {
+    color: #000;
+    font-size: 1.4em;
+}
+div.graphics div.filter {
+    left: 20px;
+    position: absolute;
+    top: 20px;
+    width:300px;
+    text-align: center;
+}
+div.graphics div.filter > div {
+    display: inline-block;
+    font-size: 0.9em;
+    padding: 0 5px;
+    background-color: #cbc9e2;
+    border-radius: 6px;
+    margin: 1px;
+}
+div.graphics div.filter > div:hover {
+    background-color: #9e9ac8;
+    cursor: pointer;
+}
+div.graphics div.filter > div.active {
+		background-color: orange;
+		}

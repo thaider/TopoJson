@@ -1,0 +1,41 @@
+{
+	"name": "TopoJson",
+	"type":  "parserhook",
+	"author": "Tobias Haider",
+	"version": "0.0.2",
+	"url": "https://github.com/thaider/TopoJson",
+	"descriptionmsg": "topojson-desc",
+	"license-name": "GPL-2.0",
+	"requires": {
+		"MediaWiki": ">= 1.29.0"
+	},
+	"ResourceFileModulePaths": {
+		"localBasePath": "resources",
+		"remoteExtPath": "TopoJson"
+	},
+	"ResourceModules": {
+		"ext.topojson": {
+			"scripts": [
+				"d3.js", 
+				"topojson.min.js", 
+				"gemeindeliste.js", 
+				"karte.js"
+			],
+			"styles": [
+				"topojson.less"
+			]
+		}
+	},
+	"MessagesDirs": {
+		"TopoJson": [
+			"i18n"
+		]
+	},
+	"AutoloadClasses": {
+		"TopoJsonHooks": "TopoJson.hooks.php"
+	},
+	"Hooks": {
+		"ParserFirstCallInit": "TopoJsonHooks::onParserFirstCallInit"
+	},
+	"manifest_version": 2
+}
