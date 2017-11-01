@@ -11,7 +11,7 @@
 	},
 	"ResourceFileModulePaths": {
 		"localBasePath": "resources",
-		"remoteExtPath": "TopoJson"
+		"remoteExtPath": "TopoJson/resources"
 	},
 	"ResourceModules": {
 		"ext.topojson": {
