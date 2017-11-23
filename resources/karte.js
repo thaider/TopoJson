@@ -99,7 +99,7 @@
 		
 			$.each( bedarfsverkehre[data], function( index, bv ) {
 				var href = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', bv.Name );
-				$('.bv_tooltip_bv').append( '<div class="bv_tooltip_name"><a href="' + href + '">' + bv.Name + '</a><br><small>' + bv.Einschraenkung + '</small></div>' );
+				$('.bv_tooltip_bv').append( '<div class="bv_tooltip_name"><a href="' + encodeURI( href ) + '">' + bv.Name + '</a><br><small>' + bv.Einschraenkung + '</small></div>' );
 			});
 
 			mouse_evt[0] += 15;

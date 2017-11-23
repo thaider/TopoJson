@@ -92,11 +92,17 @@ div.bv_tooltip .title {
     font-size: 1.4em;
 }
 div.graphics div.filter {
-    left: 20px;
-    position: absolute;
-    top: 20px;
-    width:300px;
-    text-align: center;
+	display:none;
+}
+@media (min-width:1140px) {
+	div.graphics div.filter {
+		display:block;
+		left: 20px;
+		position: absolute;
+		top: 20px;
+		width:300px;
+		text-align: center;
+	}
 }
 div.graphics div.filter > div {
     display: inline-block;
