@@ -19,7 +19,7 @@ g.map-at-bv path {
     stroke: #fff;
     stroke-width: .5px;
 }
-g.map-at-bv path.linienverkehr {
+g.map-at-bv path.lv {
 	fill: @purple-4-3;
 }
 g.map-at-bv path.bv_eing {
@@ -40,6 +40,9 @@ g.map-at-bv-eing path.highlight, g.map-at-bv-eing,
 g.map-at-bv path.filtered {
     cursor: pointer;
     fill: orange;
+}
+g.map-at-bv path.gemeinde {
+	cursor:pointer;
 }
 div.graphics {
     position: relative;
@@ -117,5 +120,44 @@ div.graphics div.filter > div:hover {
     cursor: pointer;
 }
 div.graphics div.filter > div.active {
-		background-color: orange;
-		}
+	background-color: orange;
+}
+
+
+// Flex-Icons
+.flex-icon {
+	margin-top:2px;
+	width:40px;
+	height:20px;
+	display:inline-block;
+	background-size:contain;
+	background-repeat: no-repeat;
+	background-position:50% 50%;
+}
+.flex-icon-haltestelle-haltestelle {
+	background-image:url('/w/images/0/06/Halt-halt.png');
+}
+.flex-icon-haltestelle-tuer {
+	background-image:url('/w/images/4/4b/Halt-tuer.png');
+}
+.flex-icon-haltestelle-tuer-haltestelle {
+	background-image:url('/w/images/e/e2/Halt-tuer-halt.png');
+	width:45px;
+}
+.flex-icon-tuer-tuer {
+	background-image:url('/w/images/0/00/Tuer-tuer.png');
+}
+.flex-icon-mitfahrplan {
+	background-image:url('/w/images/7/71/Fahrplan.png');
+	width:30px;
+}
+.flex-icon-mitfahrplannachbedarf {
+	background-image:url('/w/images/8/87/Fahrplan-phone.png');
+	width:30px;
+	margin-right:5px;
+}
+.flex-icon-nachbedarf {
+	background-image:url('/w/images/5/58/Phone.png');
+	width:20px;
+}
+

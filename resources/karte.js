@@ -3,6 +3,7 @@
 	var container_width = $('div.graphics').parent().width();
 	
 	var svg = null;
+	var g = null;
 	var div_graphics = null;
 	var margin = { top: 0, right: 0, bottom: 0, left: 0 },
 		width = container_width - margin.left - margin.right,
@@ -15,7 +16,7 @@
 	var scale = null;
 	
 	$( document ).ready( function() {
-		if( typeof showMap !== 'undefined' ) {
+		if( showMap === true ) {
 			init_topojson();
 		}
 	});
@@ -44,21 +45,26 @@
 		for ( var i = 0; i < geometries.length; i++ ) {
 			if ( typeof bedarfsverkehre[geometries[i].id] !== 'undefined' ) {
 				geometries_filtered[gfi] = geometries[i];
-				geometries_filtered[gfi].properties = new Array();
+				classes = [];
 				bv = bedarfsverkehre[geometries[i].id];
-				geometries_filtered[gfi].properties.einschraenkung = "bv_eing";
-				geometries_filtered[gfi].properties.linienverkehr = "";
-				geometries_filtered[gfi].properties.betriebsform = "";
+				var einschraenkung = true;
 				for ( var j = 0; j < bv.length; j++ ) {
-					geometries_filtered[gfi].properties.betriebsform = geometries_filtered[gfi].properties.betriebsform + ' ' + bv[j].Betriebsform;
+					classes.push( bv[j].ID, bv[j].Betriebsform, bv[j].Typ, bv[j].FlexRaum, bv[j].FlexZeit, bv[j].FlexRaumZeit, bv[j].Filter );
 					if( typeof bv[j].Einschraenkung == 'undefined' || bv[j].Einschraenkung === "" ) {
 						bv[j].Einschraenkung = "";
-						geometries_filtered[gfi].properties.einschraenkung = "";
+						einschraenkung = false;
+					}
+					if( typeof bv[j].Merkmale != 'undefined' && bv[j].Merkmale.length > 0 ) {
+						classes = classes.concat( bv[j].Merkmale );
 					}
 					if( bv[j].Bedienungsform === "Linienbetrieb" ) {
-						geometries_filtered[gfi].properties.linienverkehr = "linie";
+						classes.push('linie');
 					}
 				}
+				if( einschraenkung ) {
+					classes.push('bv_eing');
+				}
+				geometries_filtered[gfi].properties = { classes: classes };
 				gfi++;
 			}
 		}
@@ -78,13 +84,21 @@
 
 	function clicked_gem( gid ) {
 		var gemeinde = d3.select( 'g.map-at-municipalities #gid-' + gid );
+
+		// geklickte Gemeinde ist Gemeinde, für die Tooltip angezeigt wird
 		if( gemeinde.classed( 'clicked' ) === true ) {
 			gemeinde.classed( 'clicked', false );
 			$( 'div.bv_tooltip' ).removeClass( 'clicked' );
-		}
-		else {
-			gemeinde.classed( 'clicked', true );
-			$( 'div.bv_tooltip' ).addClass( 'clicked' );
+
+		// es wird kein Tooltip angezeigt oder für eine andere Gemeinde
+		} else {
+			var tooltip_clicked = $( 'div.bv_tooltip' ).hasClass( 'clicked' );
+			hide_tooltip();
+			show_tooltip( gid, d3.mouse(div_graphics[0][0]));
+			if( ! tooltip_clicked ) {
+				gemeinde.classed( 'clicked', true );
+				$( 'div.bv_tooltip' ).addClass( 'clicked' );
+			}
 		}
 	}
 
@@ -93,7 +107,8 @@
 		var svg = $( 'div.graphics svg' );
 		
 		if( tt.hasClass( 'clicked' ) === false ) {
-			tt.find('.bv_tooltip_ort').html( gemeindeliste[data] );
+			var href_gemeinde = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', 'Spezial:Gemeindeansicht/' + gemeindeliste[data] );
+			tt.find('.bv_tooltip_ort').html( '<a href="' + encodeURI( href_gemeinde ) + '">' + gemeindeliste[data] + '</a>' );
 		
 			tt.find('.bv_tooltip_bv').html( '' );
 		
@@ -133,6 +148,11 @@
 		}
 	}
 
+	function zoomed() {
+		projection.translate(d3.event.translate).scale(d3.event.scale);
+		g.selectAll('path').attr('d', path);
+	}
+
 	function init_map() {
 		// set dimension of dom-container _before_ loading of the json files to avoid 'jumping' of the page
 		div_graphics = d3.select('div.graphics');
@@ -152,7 +172,16 @@
 			path = d3.geo.path()
 				.projection(projection);
 
-			map_states = svg.append('g');
+			zoom = d3.behavior.zoom()
+				.translate(projection.translate())
+				.scale(projection.scale())
+				.scaleExtent([13 * height, 60 * height])
+				.on('zoom', zoomed);
+
+			g = svg.append('g')
+				.call(zoom);
+
+			map_states = g.append('g');
 			map_states.attr('class','map-at-states')
 				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -173,7 +202,7 @@
 
 				var gems_bv = topojson.feature(bv, bv.objects.grenzenaut);
 
-				map_bv = svg.append('g');
+				map_bv = g.append('g');
 				map_bv.attr('class','map-at-bv map-at-municipalities')
 					.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -182,7 +211,7 @@
 					.enter().append('path')
 					.attr('d',path)
 					.attr('id', function(d) { return 'gid-'+d.id; })
-					.attr('class', function(d) { return 'bv '+d.properties.einschraenkung+' '+d.properties.linienverkehr+' '+d.properties.betriebsform; })
+					.attr('class', function(d) { return 'gemeinde ' + d.properties.classes.join(' '); })
 					.on("mouseover", function (d) 	{ show_tooltip( d.id, d3.mouse(div_graphics[0][0])); })
 					.on("mousemove", function (d) 	{ show_tooltip( d.id, d3.mouse(div_graphics[0][0])); })
 					.on("mouseout", function (d)	{ hide_tooltip_if_unclicked(); })
@@ -190,19 +219,19 @@
 
 
 				$( 'div.graphics' ).append( '<div class="filter"></div>' );
-				if( betriebsformen != '' ) {
-					$.each( betriebsformen, function( key, value) {
-						$( '.filter' ).append( '<div class="filter-betriebsform" data-betriebsform="' + key + '">' + value + '</div>' );
+				if( filter != '' ) {
+					$.each( filter, function( key, value) {
+						$( '.filter' ).append( '<div class="filter-value" data-filter-value="' + key + '">' + value + '</div>' );
 						});
 				}
-				$( '[data-betriebsform]' ).click( function() {
-					d3.selectAll( '.bv' ).classed( 'filtered', false );
+				$(document).on( 'click', '[data-filter-value]', function() {
+					d3.selectAll( '.filtered' ).classed( 'filtered', false );
 					if( $(this).hasClass( 'active' ) ) {
 						$(this).removeClass( 'active' );
 						}
 					else {
-						d3.selectAll( '.' + $(this).attr( 'data-betriebsform' ) ).classed( 'filtered', true );
-						$( '[data-betriebsform]' ).removeClass( 'active' );
+						d3.selectAll( '.' + $(this).attr( 'data-filter-value' ) ).classed( 'filtered', true );
+						$( '[data-filter-value]' ).removeClass( 'active' );
 						$(this).addClass( 'active' );
 						}
 					});
