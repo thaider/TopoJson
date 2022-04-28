@@ -61,9 +61,12 @@ div.bv_tooltip {
     position: absolute;
     text-align: center;
     top: 0;
-    width: 190px;
+    width: 250px;
     word-wrap: break-word;
     z-index: 9;
+}
+.bv_tooltip_name {
+	margin-bottom:.5rem;
 }
 div.bv_tooltip.no_display {
 		display:none;
@@ -87,8 +90,8 @@ span.bv_tooltip_hr {
     background: none repeat scroll 0 0 #ddd;
     display: block;
     height: 1px;
-    margin: 1px auto 3px;
-    width: 130px;
+    margin: 1px auto .5rem;
+    width: 210px;
 }
 div.bv_tooltip .title {
     color: #000;
@@ -107,20 +110,23 @@ div.graphics div.filter {
 		text-align: center;
 	}
 }
-div.graphics div.filter > div {
+div.graphics div.filter > div.filter-value {
     display: inline-block;
     font-size: 0.9em;
     padding: 0 5px;
-    background-color: #cbc9e2;
+    background-color: #f5f5f5 !important; //#cbc9e2;
     border-radius: 6px;
     margin: 1px;
 }
-div.graphics div.filter > div:hover {
-    background-color: #9e9ac8;
+div.graphics div.filter > div.filter-value:hover {
+    background-color: #eee !important; //#9e9ac8;
     cursor: pointer;
 }
-div.graphics div.filter > div.active {
-	background-color: orange;
+div.graphics div.filter > div.filter-value.active {
+	background-color: #ddd !important; // orange;
+}
+div.graphics div.filter > div.filter-heading {
+	background-color:transparent !important;
 }
 
 

@@ -107,7 +107,7 @@
 		var svg = $( 'div.graphics svg' );
 		
 		if( tt.hasClass( 'clicked' ) === false ) {
-			var href_gemeinde = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', 'Spezial:Gemeindeansicht/' + gemeindeliste[data] );
+			var href_gemeinde = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', gemeindeliste[data] );
 			tt.find('.bv_tooltip_ort').html( '<a href="' + encodeURI( href_gemeinde ) + '">' + gemeindeliste[data] + '</a>' );
 		
 			tt.find('.bv_tooltip_bv').html( '' );
@@ -120,8 +120,8 @@
 			mouse_evt[0] += 15;
 			mouse_evt[1] += 15;
 			
-			if( mouse_evt[0] > svg.attr("width") - 205 ) {
-				mouse_evt[0] = mouse_evt[0] - 220;
+			if( mouse_evt[0] > svg.attr("width") - 255 ) {
+				mouse_evt[0] = mouse_evt[0] - 270;
 			}
 			if( mouse_evt[1] > svg.attr("height")/2 ) {
 				mouse_evt[1] = mouse_evt[1] - tt.height() - 30;
@@ -220,6 +220,9 @@
 
 				$( 'div.graphics' ).append( '<div class="filter"></div>' );
 				if( filter != '' ) {
+					if( filterheading ) {
+						$( '.filter' ).append( '<div class="filter-heading">' + filterheading + '</div>' );
+					}
 					$.each( filter, function( key, value) {
 						$( '.filter' ).append( '<div class="filter-value" data-filter-value="' + key + '">' + value + '</div>' );
 						});

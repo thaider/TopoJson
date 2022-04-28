@@ -44,6 +44,7 @@ class TopoJsonHooks {
 		}
 
 		$orte = [];
+		$filterheading = false;
 		$filter = [];
 
 		foreach( $queries as $typ => $query ) {
@@ -56,6 +57,8 @@ class TopoJsonHooks {
 				|?FlexZeit
 				|?Merkmal
 				|?CarSharing-Software
+				|?Software
+				|?Jahr
 				|?=Name
 				|mainlabel=-
 				|format=array
@@ -86,16 +89,40 @@ class TopoJsonHooks {
 					// Filter je nach Typ setzen
 					if( $typ == 'cs' ) {
 						$filterprop = $args['filter'] == '' ? 'Name' : $args['filter'];
+						$filterheadings = [
+							'Name' => 'Betreiber mit 10+ Gemeinden:',
+						];
+						if( isset( $filterheadings[$filterprop] ) ) {
+							$filterheading = $filterheadings[$filterprop];
+						}
 						// wenn nach Name gefiltert wird, nur CarSharing-Angebote mit mehr als zehn Gemeinden anzeigen
-						if( $filterprop != 'Name' || count( $prop_array['GKZ'] ) > 10 ) {
+						if( $filterprop != 'Name' || count( $prop_array['GKZ'] ) > 9 ) {
 							$filterkey = self::clean_class( $prop_array[$filterprop] );
 							$filter[$filterkey] = $prop_array[$filterprop];
 						}
 					}
 					if( $typ == 'bv' ) {
-						$filterkey = self::clean_class( $prop_array['FlexZeit'] . '-' . $prop_array['FlexRaum'] );
-						$filter[$filterkey] = '<span class="flex-icon flex-icon-' . self::clean_class( $prop_array['FlexZeit'] ) . '" title="' . $prop_array['FlexZeit'] . '"></span> <span class="flex-icon flex-icon-' . self::clean_class( $prop_array['FlexRaum'] ) . '" title="' . $prop_array['FlexRaum'] . '"></span>';
-						//$filter[self::clean_class( $prop_array['Betriebsform'] )] = $prop_array['Betriebsform'];
+						$filterprop = $args['filter'] == '' ? 'Bedienungsform' : $args['filter'];
+						$filterheadings = [
+							'Bedienungsform' => 'nach Bedienungsform filtern:',
+						];
+						if( isset( $filterheadings[$filterprop] ) ) {
+							$filterheading = $filterheadings[$filterprop];
+						}
+						if( $filterprop == 'Bedienungsform' ) {
+							$filterkey = self::clean_class( $prop_array['FlexZeit'] . '-' . $prop_array['FlexRaum'] );
+							$filter[$filterkey] = '<span class="flex-icon flex-icon-' . self::clean_class( $prop_array['FlexZeit'] ) . '" title="' . $prop_array['FlexZeit'] . '"></span> <span class="flex-icon flex-icon-' . self::clean_class( $prop_array['FlexRaum'] ) . '" title="' . $prop_array['FlexRaum'] . '"></span>';
+						} elseif( $filterprop == 'Jahr' ) {
+							$filterkey = 'jahr-' . self::clean_class( $prop_array[$filterprop] );
+							if( $prop_array[$filterprop] ) {
+								$filter[$filterkey] = $prop_array[$filterprop];
+							} else {
+								unset( $filterkey );
+							}
+						} else {
+							$filterkey = self::clean_class( $prop_array[$filterprop] );
+							$filter[$filterkey] = $prop_array[$filterprop];
+						}
 					}
 				}
 
@@ -130,6 +157,7 @@ class TopoJsonHooks {
 
 	    ksort( $filter );
 		unset( $filter['-'] );
+		unset( $filter[''] );
 
 		$out = '<div id="bvMap" style="position:relative' . ( ( isset( $args['onclick'] ) ) ? ';display:none' : '' ) . '">
 						<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCFET0NUWVBFIHN2ZyBQVUJ MSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3 MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJFYmVuZV8xI iB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8v d3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIKCSB3aWR0aD0iMnB4IiBoZWl naHQ9IjFweCIgdmlld0JveD0iMCAwIDIgMSIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMi AxIiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPC9zdmc+" style="width:100%">
@@ -149,6 +177,7 @@ class TopoJsonHooks {
 	   	}
 
 	    $out .= '<script>var filter = ' . json_encode( $filter ) . '</script>';
+	    $out .= '<script>var filterheading = ' . json_encode( $filterheading ) . '</script>';
 	    if( isset( $args['onclick'] ) ) {
 	    	$out .= '<a class="btn btn-default btn-xs" id="showMap">Karte zeigen</a>';
 	   	} else {
