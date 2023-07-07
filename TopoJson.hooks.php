@@ -3,6 +3,7 @@
 use MediaWiki\Extension\MobilAmLand\Hooks as MobilAmLandHooks; 
 
 class TopoJsonHooks {
+	protected static $id = 0;
 
 	public static function onParserFirstCallInit( Parser $parser ) {
 		$parser->setHook( "topojson", "TopoJsonHooks::TopoJson" );
@@ -20,12 +21,14 @@ class TopoJsonHooks {
 	 */
 	public static function TopoJson( $text, $args, $parser, $frame ) {
 		global $wgOut;
+	    	static::$id++;
+ 
 		$wgOut->addModules( 'ext.topojson' );
 		$text = trim( $text );
 
 		$gemeindeliste = [];
 		$queries = [];
-		$queries['bv'] = '[[Kategorie:Mikro-ÖV-System]][[Bundesland::+]][[aktiv::wahr]]';
+		$queries['bv'] = '[[Kategorie:Bedarfsverkehr]][[Bundesland::+]][[aktiv::wahr]]';
 		$queries['lv'] = '[[Kategorie:Linienverkehr]][[Bundesland::+]][[aktiv::wahr]]';
 		$queries['cs'] = '[[Kategorie:CarSharing-System]][[Bundesland::+]][[aktiv::wahr]]';
 
@@ -40,7 +43,13 @@ class TopoJsonHooks {
 		}
 
 		if( isset( $args['betriebsform'] ) ) {
-			$queries = [ 'betriebsform' => '[[Kategorie:Mikro-ÖV-System]][[Bundesland::+]][[aktiv::wahr]][[Betriebsform::' . $args['betriebsform'] . ']]' ];
+			$queries = [ 'betriebsform' => '[[Kategorie:Bedarfsverkehr]][[Bundesland::+]][[aktiv::wahr]][[Betriebsform::' . $args['betriebsform'] . ']]' ];
+		}
+		if( isset( $args['modell'] ) ) {
+			$queries = [ 'modell' => '[[Kategorie:Bedarfsverkehr]][[Bundesland::+]][[aktiv::wahr]][[Modell::Handbuch:' . $args['modell'] . ']]' ];
+		}
+		if( isset( $args['bundesland'] ) ) {
+			$queries = [ 'bundesland' => '[[Kategorie:Bedarfsverkehr]][[Bundesland::' . $args['bundesland'] . ']][[aktiv::wahr]]' ];
 		}
 
 		$orte = [];
@@ -48,8 +57,12 @@ class TopoJsonHooks {
 		$filter = [];
 
 		foreach( $queries as $typ => $query ) {
-			$query = '{{#ask:' . $query . '
-				|?Einschränkung=Einschraenkung
+			$query = '{{#ask:' . $query;
+			if( !isset( $args['modell'] ) && !isset( $args['betriebsform'] ) ) {
+				$query .= '
+				|?Einschränkung=Einschraenkung';
+			}
+			$query .= '
 				|?Betriebsform
 				|?Ort
 				|?GKZ#
@@ -59,6 +72,7 @@ class TopoJsonHooks {
 				|?CarSharing-Software
 				|?Software
 				|?Jahr
+				|?Modell
 				|?=Name
 				|mainlabel=-
 				|format=array
@@ -81,9 +95,9 @@ class TopoJsonHooks {
 					$prop_array[$prop[0]] = $prop[1];
 				}
 			
-				$prop_array['GKZ'] = explode( '&lt;MANY&gt;', $prop_array['GKZ'] );
+				$prop_array['GKZ'] = explode( '&lt;MANY&gt;', $prop_array['GKZ'] ?? [] );
 
-				$prop_array['Betriebsform'] = str_replace( "Betriebsform:", "", $prop_array['Betriebsform'] );
+				$prop_array['Betriebsform'] = str_replace( "Betriebsform:", "", $prop_array['Betriebsform'] ?? [] );
 				
 				if( isset( $args['filter'] ) ) {
 					// Filter je nach Typ setzen
@@ -128,19 +142,19 @@ class TopoJsonHooks {
 
 				$angebote[$key]['Betriebsform'] = self::clean_class( $prop_array['Betriebsform'] );
 				$angebote[$key]['Typ'] = $typ;
-				$angebote[$key]['Name'] = $prop_array['Name'];
-				$angebote[$key]['ID'] = self::clean_class( $prop_array['Name'] );
-				$angebote[$key]['FlexRaum'] = self::clean_class( $prop_array['FlexRaum'] );
-				$angebote[$key]['FlexZeit'] = self::clean_class( $prop_array['FlexZeit'] );
+				$angebote[$key]['Name'] = $prop_array['Name'] ?? '';
+				$angebote[$key]['ID'] = self::clean_class( $prop_array['Name'] ?? '' );
+				$angebote[$key]['FlexRaum'] = self::clean_class( $prop_array['FlexRaum'] ?? '' );
+				$angebote[$key]['FlexZeit'] = self::clean_class( $prop_array['FlexZeit'] ?? '' );
 				if( isset( $filterkey ) ) {
 					$angebote[$key]['Filter'] = $filterkey;
 				}
-				$merkmale = explode( '&lt;MANY&gt;', $prop_array['Merkmal'] );
+				$merkmale = explode( '&lt;MANY&gt;', $prop_array['Merkmal'] ?? '' );
 				foreach( $merkmale as &$merkmal ) {
 					$merkmal = self::clean_class( $merkmal );
 				}
 				$angebote[$key]['Merkmale'] = $merkmale;
-				if( $prop_array['Einschraenkung'] ) {
+				if( isset( $prop_array['Einschraenkung'] ) && $prop_array['Einschraenkung'] ) {
 					$angebote[$key]['Einschraenkung'] = str_replace( "&lt;MANY&gt;", "<br>", $prop_array['Einschraenkung'] );
 				}
 
@@ -159,7 +173,7 @@ class TopoJsonHooks {
 		unset( $filter['-'] );
 		unset( $filter[''] );
 
-		$out = '<div id="bvMap" style="position:relative' . ( ( isset( $args['onclick'] ) ) ? ';display:none' : '' ) . '">
+		$out = '<div id="bvMap' . static::$id . '" style="position:relative' . ( ( isset( $args['onclick'] ) ) ? ';display:none' : '' ) . '">
 						<img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0idXRmLTgiPz4KPCFET0NUWVBFIHN2ZyBQVUJ MSUMgIi0vL1czQy8vRFREIFNWRyAxLjEvL0VOIiAiaHR0cDovL3d3dy53My5vcmcvR3JhcGhpY3 MvU1ZHLzEuMS9EVEQvc3ZnMTEuZHRkIj4KPHN2ZyB2ZXJzaW9uPSIxLjEiIGlkPSJFYmVuZV8xI iB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHhtbG5zOnhsaW5rPSJodHRwOi8v d3d3LnczLm9yZy8xOTk5L3hsaW5rIiB4PSIwcHgiIHk9IjBweCIKCSB3aWR0aD0iMnB4IiBoZWl naHQ9IjFweCIgdmlld0JveD0iMCAwIDIgMSIgZW5hYmxlLWJhY2tncm91bmQ9Im5ldyAwIDAgMi AxIiB4bWw6c3BhY2U9InByZXNlcnZlIj4KPC9zdmc+" style="width:100%">
 						<div class="graphics" style="position:absolute;top:0">';
 
@@ -169,21 +183,21 @@ class TopoJsonHooks {
             </div>';
 	    $out .= '</div></div>';    
     
-		$out .= '<script>var gemeindeliste = ' . json_encode( $gemeindeliste ) . '</script>';
-	    $out .= '<script>var bedarfsverkehre = ' . json_encode( $orte ) . '</script>';
+		$out .= '<script>var gemeindeliste' . static::$id . ' = ' . json_encode( $gemeindeliste ) . '</script>';
+	    $out .= '<script>var bedarfsverkehre' . static::$id . ' = ' . json_encode( $orte ) . '</script>';
 
 	    if( !isset( $args['filter'] ) ) {
 	    	$filter = '';
 	   	}
 
-	    $out .= '<script>var filter = ' . json_encode( $filter ) . '</script>';
-	    $out .= '<script>var filterheading = ' . json_encode( $filterheading ) . '</script>';
+	    $out .= '<script>var filter' . static::$id . ' = ' . json_encode( $filter ) . '</script>';
+	    $out .= '<script>var filterheading' . static::$id . ' = ' . json_encode( $filterheading ) . '</script>';
 	    if( isset( $args['onclick'] ) ) {
 	    	$out .= '<a class="btn btn-default btn-xs" id="showMap">Karte zeigen</a>';
 	   	} else {
 	    	$out .= '<script>var showMap = true;</script>';
 	   	}
- 
+
 		return $out;
 	}
 

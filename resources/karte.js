@@ -37,16 +37,16 @@
 	}
 
 	function filter_geometry_bv( data ) {
-		var geometries = data.objects.grenzenaut.geometries;
+		var geometries = data.objects.gemeinden.geometries;
 		var geometries_filtered = new Array();
 		var gfi = 0;
 		var bv;
 		
 		for ( var i = 0; i < geometries.length; i++ ) {
-			if ( typeof bedarfsverkehre[geometries[i].id] !== 'undefined' ) {
+			if ( typeof bedarfsverkehre1[geometries[i].properties.iso] !== 'undefined' ) {
 				geometries_filtered[gfi] = geometries[i];
 				classes = [];
-				bv = bedarfsverkehre[geometries[i].id];
+				bv = bedarfsverkehre1[geometries[i].properties.iso];
 				var einschraenkung = true;
 				for ( var j = 0; j < bv.length; j++ ) {
 					classes.push( bv[j].ID, bv[j].Betriebsform, bv[j].Typ, bv[j].FlexRaum, bv[j].FlexZeit, bv[j].FlexRaumZeit, bv[j].Filter );
@@ -64,7 +64,7 @@
 				if( einschraenkung ) {
 					classes.push('bv_eing');
 				}
-				geometries_filtered[gfi].properties = { classes: classes };
+				geometries_filtered[gfi].properties.classes = classes;
 				gfi++;
 			}
 		}
@@ -78,7 +78,7 @@
 		console.log( bedarfsverkehre_unshown );
 		*/
 		
-		data.objects.grenzenaut.geometries = geometries_filtered;
+		data.objects.gemeinden.geometries = geometries_filtered;
 		return data;
 	} 
 
@@ -107,12 +107,12 @@
 		var svg = $( 'div.graphics svg' );
 		
 		if( tt.hasClass( 'clicked' ) === false ) {
-			var href_gemeinde = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', gemeindeliste[data] );
-			tt.find('.bv_tooltip_ort').html( '<a href="' + encodeURI( href_gemeinde ) + '">' + gemeindeliste[data] + '</a>' );
+			var href_gemeinde = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', gemeindeliste1[data] );
+			tt.find('.bv_tooltip_ort').html( '<a href="' + encodeURI( href_gemeinde ) + '">' + gemeindeliste1[data] + '</a>' );
 		
 			tt.find('.bv_tooltip_bv').html( '' );
 		
-			$.each( bedarfsverkehre[data], function( index, bv ) {
+			$.each( bedarfsverkehre1[data], function( index, bv ) {
 				var href = mw.config.get('wgServer') + mw.config.get('wgArticlePath').replace( '$1', bv.Name );
 				$('.bv_tooltip_bv').append( '<div class="bv_tooltip_name"><a href="' + encodeURI( href ) + '">' + bv.Name + '</a><br><small>' + bv.Einschraenkung + '</small></div>' );
 			});
@@ -200,7 +200,7 @@
 				bv = $.extend( true, {}, aut_gem );
 				bv = filter_geometry_bv( bv );
 
-				var gems_bv = topojson.feature(bv, bv.objects.grenzenaut);
+				var gems_bv = topojson.feature(bv, bv.objects.gemeinden);
 
 				map_bv = g.append('g');
 				map_bv.attr('class','map-at-bv map-at-municipalities')
@@ -210,20 +210,20 @@
 					.data(gems_bv.features)
 					.enter().append('path')
 					.attr('d',path)
-					.attr('id', function(d) { return 'gid-'+d.id; })
+					.attr('id', function(d) { return 'gid-'+d.properties.iso; })
 					.attr('class', function(d) { return 'gemeinde ' + d.properties.classes.join(' '); })
-					.on("mouseover", function (d) 	{ show_tooltip( d.id, d3.mouse(div_graphics[0][0])); })
-					.on("mousemove", function (d) 	{ show_tooltip( d.id, d3.mouse(div_graphics[0][0])); })
+					.on("mouseover", function (d) 	{ show_tooltip( d.properties.iso, d3.mouse(div_graphics[0][0])); })
+					.on("mousemove", function (d) 	{ show_tooltip( d.properties.iso, d3.mouse(div_graphics[0][0])); })
 					.on("mouseout", function (d)	{ hide_tooltip_if_unclicked(); })
-					.on("click", function (d)	{ d3.event.stopPropagation(); clicked_gem( d.id ); });
+					.on("click", function (d)	{ d3.event.stopPropagation(); clicked_gem( d.properties.iso ); });
 
 
 				$( 'div.graphics' ).append( '<div class="filter"></div>' );
-				if( filter != '' ) {
-					if( filterheading ) {
-						$( '.filter' ).append( '<div class="filter-heading">' + filterheading + '</div>' );
+				if( filter1 != '' ) {
+					if( filterheading1 ) {
+						$( '.filter' ).append( '<div class="filter-heading">' + filterheading1 + '</div>' );
 					}
-					$.each( filter, function( key, value) {
+					$.each( filter1, function( key, value) {
 						$( '.filter' ).append( '<div class="filter-value" data-filter-value="' + key + '">' + value + '</div>' );
 						});
 				}
@@ -239,7 +239,7 @@
 						}
 					});
 
-				$( '#bvMap' ).click( function(e) {
+				$( '#bvMap1' ).click( function(e) {
 					hide_tooltip();
 				});
 
