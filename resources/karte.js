@@ -195,7 +195,7 @@
 				.attr('class', 'state');
 
 			// load gemeinde-borders (todo thats not optimal)
-			d3.json( mw.config.get('wgServer') + mw.config.get('wgScriptPath') + "/extensions/TopoJson/json/gemeinden.json", function(error, aut_gem) {
+			d3.json( mw.config.get('wgServer') + mw.config.get('wgScriptPath') + "/extensions/TopoJson/json/gemeinden-2021.json", function(error, aut_gem) {
 				// 'echte' bedarfsverkehre
 				bv = $.extend( true, {}, aut_gem );
 				bv = filter_geometry_bv( bv );
